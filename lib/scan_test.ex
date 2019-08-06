@@ -5,48 +5,69 @@ defmodule ScanTest do
     IO.puts("SCAN 0 MATCH x* COUNT <count>")
     IO.puts("")
 
-    ["avg time", "dbsize", "count"]
-    |> print_columns
+    values = [
+      [100, 10],
+      [1000, 10],
+      [10000, 10],
+      [100_000, 10],
+      [100, 100],
+      [1000, 100],
+      [10000, 100],
+      [100_000, 100],
+      [100, 1000],
+      [1000, 1000],
+      [10000, 1000],
+      [100_000, 1000],
+      [100, 10000],
+      [1000, 10000],
+      [10000, 10000],
+      [100_000, 10000]
+    ]
 
-    measure(100, 10)
-    measure(1000, 10)
-    measure(10000, 10)
-    measure(100_000, 10)
-    measure(100, 100)
-    measure(1000, 100)
-    measure(10000, 100)
-    measure(100_000, 100)
-    measure(100, 1000)
-    measure(1000, 1000)
-    measure(10000, 1000)
-    measure(100_000, 1000)
-    measure(100, 10000)
-    measure(1000, 10000)
-    measure(10000, 10000)
-    measure(100_000, 10000)
+    ["avg time", "dbsize", "count"]
+    |> print_columns(underline: true)
+
+    values
+    |> Enum.sort_by(fn [dbsize, _count] -> dbsize end)
+    |> Enum.each(fn [dbsize, count] ->
+      measure(dbsize, count)
+    end)
+
+    IO.puts("")
+
+    ["avg time", "dbsize", "count"]
+    |> print_columns(underline: true)
+
+    values
+    |> Enum.sort_by(fn [_dbsize, count] -> count end)
+    |> Enum.each(fn [dbsize, count] ->
+      measure(dbsize, count)
+    end)
   end
 
   defp measure(dbsize, count) do
     Redix.command(:redix, ["FLUSHDB"])
-    {_time, _result} = :timer.tc(fn -> create_dataset(dbsize) end)
-    # ms = time / 1000
-    # IO.puts("Created dataset size #{dbsize} in #{ms} ms")
+    create_dataset(dbsize)
     {time, _result} = :timer.tc(fn -> scan(count) end)
     avg_ms = time / 1000 / @num_runs
 
     [avg_ms, dbsize, count]
     |> print_columns
-
-    # count_factor = count / ms
-    # dbsize_factor = dbsize / ms
-    # IO.puts("Count factor: #{count_factor}. Dbsize factor: #{dbsize_factor}")
   end
 
-  defp print_columns(columns) do
-    columns
-    |> Enum.map(&format/1)
-    |> Enum.join(" ")
-    |> IO.puts()
+  defp print_columns(columns, underline \\ false) do
+    line =
+      columns
+      |> Enum.map(&format/1)
+      |> Enum.join(" ")
+
+    IO.puts(line)
+
+    if underline do
+      line
+      |> String.replace(~r/./, "-")
+      |> IO.puts()
+    end
   end
 
   defp create_dataset(dbsize) do
