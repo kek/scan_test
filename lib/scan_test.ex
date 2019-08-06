@@ -1,54 +1,52 @@
 defmodule ScanTest do
   @num_runs 1000
+  @increments 4
 
   def run do
     IO.puts("SCAN 0 MATCH x* COUNT <count>")
     IO.puts("")
 
-    values = [
-      [100, 10],
-      [1000, 10],
-      [10000, 10],
-      [100_000, 10],
-      [100, 100],
-      [1000, 100],
-      [10000, 100],
-      [100_000, 100],
-      [100, 1000],
-      [1000, 1000],
-      [10000, 1000],
-      [100_000, 1000],
-      [100, 10000],
-      [1000, 10000],
-      [10000, 10000],
-      [100_000, 10000]
-    ]
-
-    ["avg time", "dbsize", "count"]
-    |> print_columns(underline: true)
-
-    values
-    |> Enum.sort_by(fn [dbsize, _count] -> dbsize end)
-    |> Enum.each(fn [dbsize, count] ->
-      measure(dbsize, count)
-    end)
+    values(@increments)
+    |> Enum.sort_by(&elem(&1, 0))
+    |> report()
 
     IO.puts("")
 
-    ["avg time", "dbsize", "count"]
+    values(@increments)
+    |> Enum.sort_by(&elem(&1, 1))
+    |> report()
+  end
+
+  defp report(values) do
+    ["avg ms", "dbsize", "count"]
     |> print_columns(underline: true)
 
     values
-    |> Enum.sort_by(fn [_dbsize, count] -> count end)
-    |> Enum.each(fn [dbsize, count] ->
+    |> Enum.each(fn {dbsize, count} ->
       measure(dbsize, count)
     end)
+  end
+
+  def values(inc) do
+    for count_factor <- 1..inc, dbsize_factor <- 2..(inc + 1) do
+      dbsize = round(:math.pow(10, dbsize_factor))
+      count = round(:math.pow(10, count_factor))
+      {dbsize, count}
+    end
   end
 
   defp measure(dbsize, count) do
     Redix.command(:redix, ["FLUSHDB"])
     create_dataset(dbsize)
-    {time, _result} = :timer.tc(fn -> scan(count) end)
+
+    {time, _result} =
+      :timer.tc(fn ->
+        1..@num_runs
+        |> Enum.each(fn _ ->
+          scan(count)
+        end)
+      end)
+
     avg_ms = time / 1000 / @num_runs
 
     [avg_ms, dbsize, count]
@@ -81,10 +79,7 @@ defmodule ScanTest do
   end
 
   defp scan(count) do
-    1..@num_runs
-    |> Enum.each(fn _ ->
-      Redix.command(:redix, ["SCAN", 0, "MATCH", "x*", "COUNT", count])
-    end)
+    Redix.command(:redix, ["SCAN", 0, "MATCH", "x*", "COUNT", count])
   end
 
   defp format(string) when is_binary(string) do
