@@ -1,21 +1,23 @@
-# ScanTest
+# Redis SCAN test
 
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `scan_test` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:scan_test, "~> 0.1.0"}
-  ]
-end
 ```
+SCAN 0 MATCH x* COUNT <count>
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/scan_test](https://hexdocs.pm/scan_test).
-
+avg time dbsize   count
+0.0765   100      10
+0.0757   1000     10
+0.0803   10000    10
+0.0788   100000   10
+0.1121   100      100
+0.099    1000     100
+0.1033   10000    100
+0.1125   100000   100
+0.1134   100      1000
+0.3768   1000     1000
+0.432    10000    1000
+0.444    100000   1000
+0.1105   100      10000
+0.3766   1000     10000
+2.9081   10000    10000
+3.3687   100000   10000
+```
