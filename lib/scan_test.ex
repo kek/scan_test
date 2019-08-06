@@ -2,7 +2,8 @@ defmodule ScanTest do
   @num_runs 1000
 
   def run do
-    IO.puts("Scan test")
+    IO.puts("SCAN 0 MATCH x* COUNT <count>")
+    IO.puts("")
 
     ["avg time", "dbsize", "count"]
     |> print_columns
@@ -11,17 +12,14 @@ defmodule ScanTest do
     measure(1000, 10)
     measure(10000, 10)
     measure(100_000, 10)
-    IO.puts("")
     measure(100, 100)
     measure(1000, 100)
     measure(10000, 100)
     measure(100_000, 100)
-    IO.puts("")
     measure(100, 1000)
     measure(1000, 1000)
     measure(10000, 1000)
     measure(100_000, 1000)
-    IO.puts("")
     measure(100, 10000)
     measure(1000, 10000)
     measure(10000, 10000)
